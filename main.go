@@ -23,6 +23,11 @@ type Response struct {
   Result Result `json:"result"`
 }
 
+type ErrorResponse struct {
+  Code int `json:"code"`
+  Error string `json:"error"`
+}
+
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
   query := r.URL.Query()
   url := query["url"][0]
@@ -45,16 +50,27 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
   fmt.Printf("%s", html)
 
   // Server response
-  response := Response{
-    resp.StatusCode,
-    Result{
-      UrlPreview{
-        Url: url,
-      },
-    },
-  }
-  data, err := json.Marshal(response)
+  var response interface{}
+  if resp.StatusCode == 200 {
+    // Valid url
 
+    response = Response{
+      resp.StatusCode,
+      Result{
+        UrlPreview{
+          Url: url,
+        },
+      },
+    }
+  } else {
+    // Invalid url
+    response = ErrorResponse{
+      400,
+      "Invalid URL",
+    }
+  }
+
+  data, err := json.Marshal(response)
   if err != nil {
     log.Fatal(err)
   }
