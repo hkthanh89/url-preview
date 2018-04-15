@@ -5,13 +5,14 @@ import (
   "log"
   "net/http"
   "github.com/gorilla/mux"
-  "fmt"
-  "io/ioutil"
   "strings"
+  "fmt"
+  "github.com/PuerkitoBio/goquery"
 )
 
 type UrlPreview struct {
   Url   string `json:"url"`
+  Title string `json:"title"`
 }
 
 type Result struct {
@@ -37,33 +38,43 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   // Get html
-  resp, err := http.Get(url)
+  res, err := http.Get(url)
   if err != nil {
     log.Fatal(err)
   }
-  defer resp.Body.Close()
-
-  html, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    log.Fatal(err)
-  }
-  fmt.Printf("%s", html)
+  defer res.Body.Close()
 
   // Server response
   var response interface{}
-  if resp.StatusCode == 200 {
-    // Valid url
+  if res.StatusCode == 200 { // Valid url
+    html, err := goquery.NewDocumentFromReader(res.Body)
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    // Find information
+    title := html.Find("title").First()
+
+    meta := html.Find("meta")
+    for _, node := range meta.Nodes {
+      // Loop nodes
+      fmt.Printf("node=%s attributes=%s \n", node.Data, node.Attr)
+      // for _, attr := range node.Attr {
+      //   // Loop attributes of a node.
+      //   fmt.Printf("Key=%s Value=%s Data=%s \n", attr.Key, attr.Val, node.Data)
+      // }
+    }
 
     response = Response{
-      resp.StatusCode,
+      res.StatusCode,
       Result{
         UrlPreview{
           Url: url,
+          Title: title.Text(),
         },
       },
     }
-  } else {
-    // Invalid url
+  } else { // Invalid url
     response = ErrorResponse{
       400,
       "Invalid URL",
