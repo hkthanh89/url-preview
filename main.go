@@ -2,19 +2,20 @@ package main
 
 import (
 	"encoding/json"
-	_ "fmt"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
+  pageService "github.com/hkthanh89/url-preview/app/services/page"
 )
 
 type UrlPreview struct {
-	Url         string `json:"url"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Image       string `json:"image"`
+	Url         string `json:"og:url"`
+	Title       string `json:"og:title"`
+	Description string `json:"og:description"`
+	Image       string `json:"og:image"`
 }
 
 type Result struct {
@@ -33,11 +34,8 @@ type ErrorResponse struct {
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	url := query["url"][0]
 
-	if !strings.Contains(url, "http") {
-		url = "http://" + url
-	}
+  url := pageService.NormalizeUrl(query["url"][0])
 
 	// Get html
 	res, err := http.Get(url)
@@ -48,34 +46,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Server response
 	var response interface{}
-	if res.StatusCode == 200 { // Valid url
-		html, err := goquery.NewDocumentFromReader(res.Body)
+	if res.StatusCode == 200 {
+    // Valid url
+		document, err := goquery.NewDocumentFromReader(res.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		var title, description, image string
-
-		meta := html.Find("meta")
-		for _, node := range meta.Nodes {
-			// Loop nodes
-			doc := goquery.NewDocumentFromNode(node)
-			val, exists := doc.Selection.Attr("property")
-
-			if exists == true {
-				if val == "og:title" {
-					title, _ = doc.Selection.Attr("content")
-				}
-
-				if val == "og:description" {
-					description, _ = doc.Selection.Attr("content")
-				}
-
-				if val == "og:image" {
-					image, _ = doc.Selection.Attr("content")
-				}
-			}
-		}
+    fmt.Println("-- start getting info")
+		url, title, description, image := pageService.GetPreviewInfo(document)
 
 		response = Response{
 			res.StatusCode,
@@ -88,7 +67,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 				},
 			},
 		}
-	} else { // Invalid url
+	} else {
+    // Invalid url
 		response = ErrorResponse{
 			400,
 			"Invalid URL",
@@ -103,6 +83,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(data)
+}
+
+func blank(s string) bool {
+  return len(strings.TrimSpace(s)) == 0
 }
 
 func main() {
