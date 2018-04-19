@@ -3,23 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
   pageService "github.com/hkthanh89/url-preview/app/services/page"
+  "github.com/hkthanh89/url-preview/app/models"
 )
 
-type UrlPreview struct {
-	Url         string `json:"og:url"`
-	Title       string `json:"og:title"`
-	Description string `json:"og:description"`
-	Image       string `json:"og:image"`
-}
-
 type Result struct {
-	UrlPreview UrlPreview `json:"object"`
+	UrlPreview models.UrlPreview `json:"object"`
 }
 
 type Response struct {
@@ -48,23 +41,16 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	var response interface{}
 	if res.StatusCode == 200 {
     // Valid url
-		document, err := goquery.NewDocumentFromReader(res.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
     fmt.Println("-- start getting info")
-		url, title, description, image := pageService.GetPreviewInfo(document)
+    urlPreview, err := pageService.GetPreviewInfo(url, res.Body)
+    if err != nil {
+      log.Fatal(err)
+    }
 
 		response = Response{
 			res.StatusCode,
 			Result{
-				UrlPreview{
-					Url:         url,
-					Title:       title,
-					Description: description,
-					Image:       image,
-				},
+				urlPreview,
 			},
 		}
 	} else {
