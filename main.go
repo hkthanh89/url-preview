@@ -2,28 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strings"
   pageService "github.com/hkthanh89/url-preview/app/services/page"
-  "github.com/hkthanh89/url-preview/app/models"
+  "github.com/hkthanh89/url-preview/app/services/payload"
 )
-
-type Result struct {
-	UrlPreview models.UrlPreview `json:"object"`
-}
-
-type Response struct {
-	Code   int    `json:"code"`
-	Result Result `json:"result"`
-}
-
-type ErrorResponse struct {
-	Code  int    `json:"code"`
-	Error string `json:"error"`
-}
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
@@ -41,24 +26,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	var response interface{}
 	if res.StatusCode == 200 {
     // Valid url
-    fmt.Println("-- start getting info")
     urlPreview, err := pageService.GetPreviewInfo(url, res.Body)
     if err != nil {
       log.Fatal(err)
     }
 
-		response = Response{
-			res.StatusCode,
-			Result{
-				urlPreview,
-			},
-		}
+    response = payload.Success(200, urlPreview)
 	} else {
     // Invalid url
-		response = ErrorResponse{
-			400,
-			"Invalid URL",
-		}
+    response = payload.Error(400, "Invalid URL")
 	}
 
 	data, err := json.Marshal(response)
@@ -69,10 +45,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(data)
-}
-
-func blank(s string) bool {
-  return len(strings.TrimSpace(s)) == 0
 }
 
 func main() {
