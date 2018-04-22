@@ -23,10 +23,6 @@ func GetPreviewInfo(url string, r io.Reader) (models.UrlPreview, error) {
   }
 
   document.Find("meta").Each(func(i int, s *goquery.Selection) {
-    if (s.AttrOr("property", "") == "og:url") {
-      urlPreview.Url = attrContent(s)
-    }
-
     if s.AttrOr("property", "") == "og:title" {
       urlPreview.Title = attrContent(s)
     } else {
