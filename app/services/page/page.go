@@ -7,11 +7,11 @@ import (
   "github.com/hkthanh89/url-preview/app/models"
 )
 
-func NormalizeUrl(link string) (url string) {
-  if !strings.Contains(link, "http") {
-    url = "http://" + link
+func NormalizeUrl(url string) string {
+  if !strings.Contains(url, "http") {
+    url = "http://" + url
   }
-  return
+  return url
 }
 
 func GetPreviewInfo(url string, r io.Reader) (models.UrlPreview, error) {
@@ -25,9 +25,6 @@ func GetPreviewInfo(url string, r io.Reader) (models.UrlPreview, error) {
   document.Find("meta").Each(func(i int, s *goquery.Selection) {
     if s.AttrOr("property", "") == "og:title" {
       urlPreview.Title = attrContent(s)
-    } else {
-      // Fallback
-      urlPreview.Title = document.Find("head > title").First().Text()
     }
 
     if (s.AttrOr("name", "") == "description") || (s.AttrOr("property", "") == "og:description") {
@@ -39,9 +36,18 @@ func GetPreviewInfo(url string, r io.Reader) (models.UrlPreview, error) {
     }
   })
 
+  // Get missing data
+  if blank(urlPreview.Title) {
+    urlPreview.Title = document.Find("head > title").First().Text()
+  }
+
   return urlPreview, nil
 }
 
 func attrContent(s *goquery.Selection) string {
   return s.AttrOr("content", "")
+}
+
+func blank(s string) bool {
+  return len(strings.TrimSpace(s)) == 0
 }
