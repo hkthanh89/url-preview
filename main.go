@@ -26,10 +26,11 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	var response interface{}
 	if res.StatusCode == 200 {
     // Valid url
-    urlPreview, err := pageService.GetPreviewInfo(url, res.Body)
+    urlPreview, err := pageService.GetPreviewInfo(res.Body)
     if err != nil {
       log.Fatal(err)
     }
+    urlPreview.Url = url
 
     response = payload.Success(200, urlPreview)
 	} else {

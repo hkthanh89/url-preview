@@ -27,33 +27,25 @@ func TestNormalizeUrl(t *testing.T) {
 }
 
 func TestGetPreviewInfo(t *testing.T) {
-  var url = "http://google.com.vn"
+  testPreviewInfo(t, titleExamples, "title")
+  testPreviewInfo(t, descriptionExamples, "description")
+  testPreviewInfo(t, imageExamples, "image")
+}
 
-  // Test title
-  for _, example := range titleExamples {
+func testPreviewInfo(t *testing.T, examples []Example, info string) {
+  for _, example := range examples {
     r := strings.NewReader(example.input)
-    urlPreview, _ := GetPreviewInfo(url, r)
-    actual := urlPreview.Title
+    urlPreview, _ := GetPreviewInfo(r)
 
-    t.Log(example.name)
-    assert.Equal(t, example.expected, actual)
-  }
-
-  // Test description
-  for _, example := range descriptionExamples {
-    r := strings.NewReader(example.input)
-    urlPreview, _ := GetPreviewInfo(url, r)
-    actual := urlPreview.Description
-
-    t.Log(example.name)
-    assert.Equal(t, example.expected, actual)
-  }
-
-  // Test image
-  for _, example := range imageExamples {
-    r := strings.NewReader(example.input)
-    urlPreview, _ := GetPreviewInfo(url, r)
-    actual := urlPreview.Image
+    var actual string
+    switch info {
+    case "title":
+      actual = urlPreview.Title
+    case "description":
+      actual = urlPreview.Description
+    case "image":
+      actual = urlPreview.Image
+    }
 
     t.Log(example.name)
     assert.Equal(t, example.expected, actual)

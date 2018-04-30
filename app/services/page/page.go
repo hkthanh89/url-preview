@@ -14,9 +14,9 @@ func NormalizeUrl(url string) string {
   return url
 }
 
-func GetPreviewInfo(url string, r io.Reader) (models.UrlPreview, error) {
+func GetPreviewInfo(r io.Reader) (models.UrlPreview, error) {
   document, err := goquery.NewDocumentFromReader(r)
-  urlPreview := models.UrlPreview{Url: url}
+  urlPreview := models.UrlPreview{}
 
   if err != nil {
     return urlPreview, err
