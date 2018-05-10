@@ -12,20 +12,6 @@ type Example struct {
   expected string
 }
 
-func TestNormalizeUrl(t *testing.T) {
-  var urlExamples = []Example{
-    { "Add http if url is missed", "google.com.vn", "http://google.com.vn" },
-    { "Don't add http if url already has", "http://google.com.vn", "http://google.com.vn" },
-  }
-
-  for _, example := range urlExamples {
-    actual := NormalizeUrl(example.input)
-
-    t.Log(example.name)
-    assert.Equal(t, example.expected, actual)
-  }
-}
-
 func TestGetPreviewInfo(t *testing.T) {
   testPreviewInfo(t, titleExamples, "title")
   testPreviewInfo(t, descriptionExamples, "description")

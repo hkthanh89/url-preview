@@ -2,17 +2,10 @@ package page
 
 import (
   "io"
-  "strings"
   "github.com/PuerkitoBio/goquery"
   "github.com/hkthanh89/url-preview/app/models"
+  "github.com/hkthanh89/url-preview/app/utils"
 )
-
-func NormalizeUrl(url string) string {
-  if !strings.Contains(url, "http") {
-    url = "http://" + url
-  }
-  return url
-}
 
 func GetPreviewInfo(r io.Reader) (models.UrlPreview, error) {
   document, err := goquery.NewDocumentFromReader(r)
@@ -37,7 +30,7 @@ func GetPreviewInfo(r io.Reader) (models.UrlPreview, error) {
   })
 
   // Get missing data
-  if blank(urlPreview.Title) {
+  if utils.Blank(urlPreview.Title) {
     urlPreview.Title = document.Find("head > title").First().Text()
   }
 
@@ -46,8 +39,4 @@ func GetPreviewInfo(r io.Reader) (models.UrlPreview, error) {
 
 func attrContent(s *goquery.Selection) string {
   return s.AttrOr("content", "")
-}
-
-func blank(s string) bool {
-  return len(strings.TrimSpace(s)) == 0
 }
