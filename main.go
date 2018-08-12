@@ -9,6 +9,7 @@ import (
   pageService "github.com/hkthanh89/url-preview/app/services/page"
   "github.com/hkthanh89/url-preview/app/services/payload"
   "github.com/hkthanh89/url-preview/app/utils"
+  "os"
 )
 
 func PreviewHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,5 +54,6 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/preview", PreviewHandler).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":8889", router))
+ 	port := os.Getenv("PORT")
+	log.Fatal(http.ListenAndServe(":" + port, router))
 }
