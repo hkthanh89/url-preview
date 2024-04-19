@@ -1,0 +1,26 @@
+# flyctl launch added from .gitignore
+**/gin-bin
+**/.DS_Store
+**/vendor/*
+
+# flyctl launch added from vendor/github.com/PuerkitoBio/goquery/.gitignore
+# editor temporary files
+vendor/github.com/PuerkitoBio/goquery/**/*.sublime-*
+vendor/github.com/PuerkitoBio/goquery/**/.DS_Store
+vendor/github.com/PuerkitoBio/goquery/**/*.swp
+#*.*#
+vendor/github.com/PuerkitoBio/goquery/**/tags
+
+# direnv config
+vendor/github.com/PuerkitoBio/goquery/**/.env*
+
+# test binaries
+vendor/github.com/PuerkitoBio/goquery/**/*.test
+
+# coverage and profilte outputs
+vendor/github.com/PuerkitoBio/goquery/**/*.out
+
+
+# flyctl launch added from vendor/github.com/gorilla/mux/.gitignore
+vendor/github.com/gorilla/mux/**/coverage.coverprofile
+fly.toml
