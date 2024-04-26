@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 
@@ -21,7 +20,7 @@ func PreviewHandler(w http.ResponseWriter, r *http.Request) {
 	// Get html
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		panic(err.Error())
 	}
 	defer res.Body.Close()
 
@@ -31,7 +30,7 @@ func PreviewHandler(w http.ResponseWriter, r *http.Request) {
 		// Valid url
 		urlPreview, err := pageService.GetPreviewInfo(res.Body)
 		if err != nil {
-			log.Fatal(err)
+			panic(err.Error())
 		}
 		urlPreview.Url = url
 
@@ -43,7 +42,7 @@ func PreviewHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		log.Fatal(err)
+		panic(err.Error())
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -64,11 +63,26 @@ func rateLimit(next http.Handler) http.Handler {
 	})
 }
 
+func recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				w.Header().Set("Connection", "close")
+				http.Error(w, err.(string), http.StatusInternalServerError)
+				return
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/preview", PreviewHandler).Methods("GET")
+	router.Use(recoverPanic)
 	router.Use(rateLimit)
 
 	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	http.ListenAndServe(":"+port, router)
 }
