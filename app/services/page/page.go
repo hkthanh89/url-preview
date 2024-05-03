@@ -37,6 +37,7 @@ func GetPreviewInfo(r io.Reader) (models.UrlPreview, error) {
 	if utils.Blank(urlPreview.Title) {
 		urlPreview.Title = document.Find("head > title").First().Text()
 	}
+	urlPreview.Title = strings.ReplaceAll(urlPreview.Title, "\n", "")
 
 	wordsCount := 0
 	document.Find("p").Each(func(i int, s *goquery.Selection) {
